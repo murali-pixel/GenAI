@@ -1,11 +1,11 @@
 from flask import Flask, request, jsonify
 import openai
-import requests
 
 app = Flask(__name__)
 
 # Set up OpenAI API credentials
 openai.api_key = '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'
+
 # Placeholder list of documents
 documents = [
     {
@@ -23,7 +23,6 @@ documents = [
 ]
 
 def search_documents(query):
-    # Perform the document search based on the query
     results = []
     for document in documents:
         if query.lower() in document['content'].lower():
@@ -32,11 +31,16 @@ def search_documents(query):
     return results
 
 # GenAI interaction function
-def generate_response(query):
+def generate_response(query, context):
+    prompt = f"Search for documents containing '{query}':\n"
+    for document in documents:
+        prompt += f"- Document: {document['title']}\nContent: {document['content']}\n\n"
+    prompt += "Chat prompt:\n" + context
+
     # Generate a response using GenAI
     response = openai.Completion.create(
         engine='text-davinci-003',
-        prompt=query,
+        prompt=prompt,
         max_tokens=50,
         n=1,
         stop=None,
@@ -53,15 +57,15 @@ def search_and_chat():
     context = data['context']
 
     # Perform document search
-    documents = search_documents(query)
+    search_results = search_documents(query)
 
     # Generate response using GenAI
-    response = generate_response(context)
+    response = generate_response(query, context)
 
     # Return the response
     return jsonify({
-        'documents': documents,
-        'response': response
+        'search_results': search_results,
+        'chat_response': response
     })
 
 if __name__ == '__main__':
