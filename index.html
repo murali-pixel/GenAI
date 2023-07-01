@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Document Search and Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        ul {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Document Search and Chat</h1>
+    <div class="container">
+        <div>
+            <label for="query">Query:</label>
+            <input type="text" id="query" name="query">
+        </div>
+        <div>
+            <label for="context">Context:</label>
+            <input type="text" id="context" name="context">
+        </div>
+        <button onclick="searchAndChat()">Search and Chat</button>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function searchAndChat() {
+            var query = document.getElementById('query').value;
+            var context = document.getElementById('context').value;
+
+            var data = {
+                query: query,
+                context: context
+            };
+
+            fetch('/api/search-and-chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display the results
+                var resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = `
+                    <h2>Documents:</h2>
+                    <ul>
+                        ${data.documents.map(doc => `<li>${doc}</li>`).join('')}
+                    </ul>
+                    <h2>Response:</h2>
+                    <p>${data.response}</p>
+                `;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
