@@ -1,0 +1,10 @@
+google-cloud-storage
+google-cloud-speech
+ffmpeg
+ffmpy
+genai
+flask
+openai
+transformers
+tensorflow
+google-cloud-aiplatform     

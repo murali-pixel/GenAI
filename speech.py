@@ -1,14 +1,56 @@
-
 import os
 from google.cloud import speech_v1p1beta1 as speech
 from google.cloud import storage
+
+import ffmpy
+from config import *
+
+
+storage_client = storage.Client()
+bucket = storage_client.bucket(BUCKET_NAME)
+
+
+def clean_and_convert_media(file_name, name_and_ext):
+    output_command = ""
+    if name_and_ext[-1] in VIDEO_EXTENSIONS:
+        output_command = "-f flac -ac 1 -ar 48000 -vn -y"
+    elif name_and_ext[-1] in AUDIO_EXTENSIONS:
+        output_command = "-ac 1 -ar 48000 -y"
+    else:
+        # process as video if extension is empty
+        output_command = "-f flac -ac 1 -ar 48000 -vn -y"
+
+    fname = os.path.join(ROOT_PATH, file_name)
+    nfname = os.path.join(ROOT_PATH, name_and_ext[0] + ".flac")
+    try:
+        ###TODO: Replace the executable path in your system
+        ff = ffmpy.FFmpeg(
+            executable=r"/Users/sushmithabatchu/Downloads/ffmpeg",
+            inputs={fname: None},
+            outputs={nfname: output_command},
+        )
+    except Exception as e:
+        print("ffmpy: ", e)
+
+    try:
+        # convert media
+        ff.run()
+    except Exception as e:
+        print(e)
+        return False
+    finally:
+        if os.path.exists(fname):
+            os.remove(fname)
+
+    return True
+
 
 def extract_transcripts(video_path):
     client = speech.SpeechClient()
 
     config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-        sample_rate_hertz=16000,
+        # encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+        # sample_rate_hertz=16000,
         language_code="en-US",
     )
 
@@ -23,26 +65,42 @@ def extract_transcripts(video_path):
 
     return transcripts
 
+
 def save_transcripts(transcripts, bucket_name, file_name):
     client = storage.Client()
     bucket = client.bucket(bucket_name)
-    blob = bucket.blob(file_name)
+    blob = bucket.blob("transcripts/" + file_name)
 
-    blob.upload_from_string('\n'.join(transcripts).encode('utf-8'), content_type='text/plain; charset=utf-8')
+    blob.upload_from_string(
+        "\n".join(transcripts).encode("utf-8"), content_type="text/plain; charset=utf-8"
+    )
 
-    
 
-def main():
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'murali-pde-f3ac279e4a26.json'
+def process_media(video_or_audio_file):
+    download_blob(video_or_audio_file)
+    name_and_ext = video_or_audio_file.split(".")
+    if clean_and_convert_media(video_or_audio_file, name_and_ext):
+        blob_name = upload_flac_to_gcs(name_and_ext[0])
+        transcripts = extract_transcripts("gs://" + BUCKET_NAME + "/" + blob_name)
 
-    video_path = 'gs://transcript_download/test.mp4'
+        save_transcripts(transcripts, BUCKET_NAME, name_and_ext[0] + ".txt")
+        print("Transcript file for the given file generated successfully")
 
-    transcripts = extract_transcripts(video_path)
 
-    bucket_name = 'transcript_download'
-    file_name = 'transcripts.txt'
+def upload_flac_to_gcs(file_name):
+    blob = bucket.blob("cleaned_audio/" + file_name + ".flac")
+    flac_file = os.path.join(ROOT_PATH, file_name + ".flac")
+    blob.upload_from_filename(flac_file)
+    print("uploaded cleaned flac file to gcs for media " + file_name)
+    os.remove(flac_file)
+    return blob.name
 
-    save_transcripts(transcripts, bucket_name, file_name)
 
-if __name__ == '__main__':
-    main()
+def download_blob(video_or_audio_file):
+    blob = bucket.blob("media/" + video_or_audio_file)
+    blob.download_to_filename(video_or_audio_file)
+
+
+if __name__ == "__main__":
+    video_or_audio_file = "test.mp4"
+    process_media(video_or_audio_file)
