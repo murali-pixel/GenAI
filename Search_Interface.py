@@ -1,7 +1,6 @@
 from flask import Flask, request, render_template
 import genai
 
-# Create a Flask application object
 app = Flask(__name__)
 
 @app.route('/')
@@ -12,7 +11,7 @@ def index():
 def search():
     query = request.form['query']
 
-    # Generate AI-based responses using GenAI model
+    # Response from GenAI
     genai_model = genai.load_model('path/to/genai/model')
     genai_responses = genai_model.generate_responses(query)
 
