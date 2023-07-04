@@ -33,4 +33,4 @@ response = openai.ChatCompletion.create(
 )
 page_summary = response["choices"][0]["message"]["content"]
 
-print(response)
+print(page_summary)
