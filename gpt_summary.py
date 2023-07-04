@@ -2,8 +2,8 @@ import openai
 
 openai.api_key = "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"
 
-meeting_transcript = """Good morning, everyone. Let's begin the meeting.",
-        "I hope everyone had a productive week.",
+meeting_transcript = """Good morning, everyone. Let's begin the ABC meeting.",
+        "I hope everyone had a productive week. Nisha, can you provide your inputs.",
         "Absolutely, I made some progress on the project we discussed last time.",
         "That's great to hear. I'm looking forward to your update.",
         "I've completed the initial research and compiled a list of potential solutions.",
@@ -20,7 +20,15 @@ meeting_transcript = """Good morning, everyone. Let's begin the meeting.",
 response = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     messages=[
-        {"role": "user", "content": f"Summarize this: {meeting_transcript}"},
+        {
+            "role": "user",
+            # "content": f"Assign tasks for developers: {meeting_transcript}",
+            # "content": f"Summarize this: {meeting_transcript}",
+            # "content": f"Take aways from the meeting: {meeting_transcript}",
+            # "content": f"What is the tone of the meeting: {meeting_transcript}",
+            # "content": f"can you mask the confidential info: {meeting_transcript}",
+            "content": f"get intent of the text: {meeting_transcript}",
+        },
     ],
 )
 page_summary = response["choices"][0]["message"]["content"]

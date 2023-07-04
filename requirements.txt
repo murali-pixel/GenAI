@@ -7,3 +7,4 @@ flask
 openai
 transformers
 tensorflow
+google-cloud-aiplatform     
