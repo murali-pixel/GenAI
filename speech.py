@@ -4,6 +4,10 @@ from google.cloud import storage
 
 import ffmpy
 from config import *
+from vertexai.preview.language_models import TextGenerationModel
+import openai
+
+openai.api_key = "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"
 
 
 storage_client = storage.Client()
@@ -82,7 +86,9 @@ def process_media(video_or_audio_file):
     if clean_and_convert_media(video_or_audio_file, name_and_ext):
         blob_name = upload_flac_to_gcs(name_and_ext[0])
         transcripts = extract_transcripts("gs://" + BUCKET_NAME + "/" + blob_name)
-
+        print("Transcript for the given file: ", transcripts)
+        extract_summary_using_gen_ai_gcp(" ".join(transcripts))
+        extract_summary_using_chat_gpt(transcripts)
         save_transcripts(transcripts, BUCKET_NAME, name_and_ext[0] + ".txt")
         print("Transcript file for the given file generated successfully")
 
@@ -101,6 +107,39 @@ def download_blob(video_or_audio_file):
     blob.download_to_filename(video_or_audio_file)
 
 
+def extract_summary_using_gen_ai_gcp(meeting_transcript):
+    parameters = {
+        "temperature": 0.2,
+        "max_output_tokens": 256,
+        "top_p": 0.8,
+        "top_k": 40,
+    }
+
+    model = TextGenerationModel.from_pretrained("text-bison@001")
+    response = model.predict(
+        prompt="Summarize this:" + meeting_transcript,
+        **parameters,
+    )
+    print(f"Response from Model(GCP): {response.text}")
+    return response.text
+
+
+def extract_summary_using_chat_gpt(meeting_transcript):
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                "role": "user",
+                "content": f"Summarize this: {meeting_transcript}",
+            },
+        ],
+    )
+
+    page_summary = response["choices"][0]["message"]["content"]
+    print("Response from CHAT GPT:", page_summary)
+    return page_summary
+
+
 if __name__ == "__main__":
-    video_or_audio_file = "test.mp4"
+    video_or_audio_file = "test2.mp4"
     process_media(video_or_audio_file)
