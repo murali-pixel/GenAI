@@ -57,7 +57,7 @@ def generate_response(query, context):
         prompt += f"- Document: {document['title']}\nContent: {document['content']}\n\n"
     prompt += "Chat prompt:\n" + context
 
-    # Generate a response using GenAI
+    
     response = openai.Completion.create(
         engine='text-davinci-003',
         prompt=prompt,
@@ -76,15 +76,15 @@ def search_and_chat():
     query = data['query']
     context = data['context']
 
-    # Perform document search
-    search_results = search_documents(query)
+    
+   # search_results = search_documents(query)
 
-    # Generate response using GenAI
+
     response = generate_response(query, context)
 
     # Return the response
     return jsonify({
-        'search_results': search_results,
+       # 'search_results': search_results,
         'chat_response': response
     })
 
