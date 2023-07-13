@@ -29,7 +29,7 @@ def clean_and_convert_media(file_name, name_and_ext):
     try:
         ###TODO: Replace the executable path in your system
         ff = ffmpy.FFmpeg(
-            executable=r"/Users/sushmithabatchu/Downloads/ffmpeg",
+            executable=r"/Users/muralikrishnakancheti/Downloads/ffmpeg-6.0",
             inputs={fname: None},
             outputs={nfname: output_command},
         )
@@ -141,5 +141,5 @@ def extract_summary_using_chat_gpt(meeting_transcript):
 
 
 if __name__ == "__main__":
-    video_or_audio_file = "test2.mp4"
+    video_or_audio_file = "test3.mp4"
     process_media(video_or_audio_file)
