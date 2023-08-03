@@ -1,4 +1,3 @@
-#ROOT_PATH = "/Users/sushmithabatchu/Development/GenAISolutions/summarizedText/"
 import os
 ROOT_PATH = os.getcwd()
 BUCKET_NAME = 'transcript_download'

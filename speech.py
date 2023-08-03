@@ -29,7 +29,7 @@ def clean_and_convert_media(file_name, name_and_ext):
     try:
         ###TODO: Replace the executable path in your system
         ff = ffmpy.FFmpeg(
-            executable=r"/Users/muralikrishnakancheti/Downloads/ffmpeg-6.0",
+            executable=r"/Users/muralikrishnakancheti/Desktop/ffmpeg",
             inputs={fname: None},
             outputs={nfname: output_command},
         )
@@ -40,6 +40,7 @@ def clean_and_convert_media(file_name, name_and_ext):
         # convert media
         ff.run()
     except Exception as e:
+        
         print(e)
         return False
     finally:
@@ -105,6 +106,11 @@ def upload_flac_to_gcs(file_name):
 def download_blob(video_or_audio_file):
     blob = bucket.blob("media/" + video_or_audio_file)
     blob.download_to_filename(video_or_audio_file)
+
+# def download_blob(video_or_audio_file):
+#     download_path = os.path.join(ROOT_PATH, video_or_audio_file)
+#     blob = bucket.blob("media/" + video_or_audio_file)
+#     blob.download_to_filename(download_path)
 
 
 def extract_summary_using_gen_ai_gcp(meeting_transcript):
